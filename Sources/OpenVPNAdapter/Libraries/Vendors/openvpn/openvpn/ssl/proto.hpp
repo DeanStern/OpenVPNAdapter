@@ -72,6 +72,7 @@
 #include <openvpn/ssl/proto_context_options.hpp>
 #include <openvpn/ssl/peerinfo.hpp>
 #include <openvpn/ssl/ssllog.hpp>
+#include <openvpn/client/scramble.hpp>
 
 #if OPENVPN_DEBUG_PROTO >= 1
 #define OPENVPN_LOG_PROTO(x) OPENVPN_LOG(x)
@@ -324,6 +325,9 @@ namespace openvpn {
 
       // GUI version, passed to server as IV_GUI_VER
       std::string gui_version;
+
+      // Scramble config
+      Scramble scramble;
 
       // op header
       bool enable_op32 = false;
@@ -1588,7 +1592,7 @@ namespace openvpn {
 
 	    // write keepalive message
 	    pkt.buf->write(data, size);
-
+			
 	    // process packet for transmission
 	    do_encrypt(*pkt.buf, false); // set compress hint to "no"
 
@@ -2030,6 +2034,7 @@ namespace openvpn {
 	if (app_recv_buf.size() > APP_MSG_MAX)
 	  throw proto_error("app_recv: received control message is too large");
 	BufferComposed::Complete bcc = app_recv_buf.complete();
+        
 	switch (state)
 	  {
 	  case C_WAIT_AUTH:
@@ -3245,6 +3250,7 @@ namespace openvpn {
 
     void net_send(const unsigned int key_id, const Packet& net_pkt)
     {
+      scrambleBuffer(net_pkt.buf, conf().scramble);
       control_net_send(net_pkt.buffer());
     }
 

@@ -55,6 +55,7 @@
 #include <openvpn/client/cliopthelper.hpp>
 #include <openvpn/client/optfilt.hpp>
 #include <openvpn/client/clilife.hpp>
+#include <openvpn/client/scramble.hpp>
 
 #include <openvpn/ssl/sslchoose.hpp>
 
@@ -238,7 +239,7 @@ namespace openvpn {
       cp_main = proto_config(opt, config, pcc, false);
       cp_relay = proto_config(opt, config, pcc, true); // may be null
       layer = cp_main->layer;
-
+        
 #ifdef PRIVATE_TUNNEL_PROXY
       if (config.alt_proxy && !dco)
 	alt_proxy = PTProxy::new_proxy(opt, rng);
@@ -698,6 +699,7 @@ namespace openvpn {
       cp->load(opt, *proto_context_options, config.default_key_direction, false);
       cp->set_xmit_creds(!autologin || pcc.hasEmbeddedPassword() || autologin_sessions);
       cp->gui_version = config.gui_version;
+      cp->scramble = pcc.scrambleConfig();
       cp->force_aes_cbc_ciphersuites = config.force_aes_cbc_ciphersuites; // also used to disable proto V2
       cp->extra_peer_info = build_peer_info(config, pcc, autologin_sessions);
       cp->frame = frame;
